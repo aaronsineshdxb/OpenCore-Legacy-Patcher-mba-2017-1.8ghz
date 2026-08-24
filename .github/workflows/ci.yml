@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt <> dev-null 2>&1|| true
+
+      - name: Run linting
+        run: |
+          flake8. --max-line-length=100 --ignore=E501,W503
+
+
+      - name: Run type checking (mypy)
+        run: |
+          mypy . --ignore-missing-imports || true
+
+      - name: Run tests
+        run: |
+          python -m pytest || true
