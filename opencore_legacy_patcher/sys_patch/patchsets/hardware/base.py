@@ -2,8 +2,8 @@
 base.py: Base class for hardware patch set detection
 """
 
-from enum    import StrEnum
 from pathlib import Path
+from opencore_legacy_patcher.support.enum import StrEnum
 
 from ..base import BasePatchset
 

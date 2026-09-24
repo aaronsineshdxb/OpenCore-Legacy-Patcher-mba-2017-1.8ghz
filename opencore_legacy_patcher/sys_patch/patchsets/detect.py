@@ -8,9 +8,9 @@ import subprocess
 import py_sip_xnu
 import packaging.version
 
-from enum      import StrEnum
 from pathlib   import Path
 from functools import cache
+from opencore_legacy_patcher.support.enum import StrEnum
 
 from .hardware.base import BaseHardware, HardwareVariantGraphicsSubclass
 
