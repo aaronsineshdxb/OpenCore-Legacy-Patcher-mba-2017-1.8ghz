@@ -23,6 +23,23 @@ from ..datasets import (
 )
 
 
+def sanitize_boot_args(boot_args: str, debug_enabled: bool) -> str:
+    """
+    Remove baseline kernel debug arguments from production builds.
+
+    Debug builds retain the arguments so panic output remains useful.
+    """
+    if debug_enabled:
+        return boot_args
+
+    production_args = {"keepsyms=1", "debug=0x100"}
+    return " ".join(
+        argument
+        for argument in boot_args.split()
+        if argument not in production_args
+    )
+
+
 class BuildMiscellaneous:
     """
     Build Library for Miscellaneous Hardware and Software Support
@@ -334,6 +351,23 @@ xw
         """
         Debug Handler for OpenCorePkg and Kernel Space
         """
+
+        boot_args_key = "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+        debug_enabled = any([
+            self.constants.verbose_debug,
+            self.constants.kext_debug,
+            self.constants.opencore_debug,
+        ])
+        self.config["NVRAM"]["Add"][boot_args_key]["boot-args"] = sanitize_boot_args(
+            self.config["NVRAM"]["Add"][boot_args_key]["boot-args"],
+            debug_enabled,
+        )
+
+        if not debug_enabled:
+            self.config["Misc"]["Debug"]["ApplePanic"] = False
+            self.config["Misc"]["Debug"]["Target"] = 0
+            self.config["Misc"]["Debug"]["DisplayLevel"] = 0
+            self.config["Misc"]["Debug"]["AppleDebug"] = False
 
         if self.constants.verbose_debug is True:
             logging.info("- Enabling Verbose boot")

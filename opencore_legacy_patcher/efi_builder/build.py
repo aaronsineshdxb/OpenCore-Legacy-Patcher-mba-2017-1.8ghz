@@ -38,6 +38,15 @@ def rmtree_handler(func, path, exc_info) -> None:
     raise  # pylint: disable=misplaced-bare-raise
 
 
+def remove_redundant_bless_overrides(entries: list[str]) -> list[str]:
+    """Remove boot paths that OpenCore discovers without an override."""
+    redundant_entries = {
+        "\\EFI\\Microsoft\\Boot\\bootmgfw.efi",
+        "\\System\\Library\\CoreServices\\boot.efi",
+    }
+    return [entry for entry in entries if entry not in redundant_entries]
+
+
 class BuildOpenCore:
     """
     Core Build Library for generating and validating OpenCore EFI Configurations
@@ -84,10 +93,9 @@ class BuildOpenCore:
         ]:
             function(self.model, self.constants, self.config)
 
-        # Work-around ocvalidate
-        if self.constants.validate is False:
-            logging.info("- Adding bootmgfw.efi BlessOverride")
-            self.config["Misc"]["BlessOverride"] += ["\\EFI\\Microsoft\\Boot\\bootmgfw.efi"]
+        self.config["Misc"]["BlessOverride"] = remove_redundant_bless_overrides(
+            self.config["Misc"]["BlessOverride"]
+        )
 
 
     def _generate_base(self) -> None:
